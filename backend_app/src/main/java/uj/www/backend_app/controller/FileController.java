@@ -4,11 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import uj.www.backend_app.model.File;
@@ -21,9 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping("/api/files")
 public class FileController {
 
-    private FileService service;
+    private final FileService service;
 
     @Autowired
     public FileController(FileService service) {
@@ -31,8 +30,9 @@ public class FileController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file) {
-        String message = "";
+        String message;
         try {
             service.store(file);
             message = "Uploaded the file successfully: " + file.getOriginalFilename();
@@ -42,7 +42,8 @@ public class FileController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
         }
     }
-    @GetMapping("/files")
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     public ResponseEntity<List<ResponseFile>> getListFiles() {
         List<ResponseFile> files = service.allFiles().stream().map(dbFile -> {
             String fileDownloadUri = ServletUriComponentsBuilder
@@ -54,15 +55,25 @@ public class FileController {
                     dbFile.name(),
                     fileDownloadUri,
                     dbFile.type(),
-                    dbFile.data().length);
+                    dbFile.data().length
+            );
         }).collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(files);
     }
-    @GetMapping("/files/{id}")
-    public ResponseEntity<byte[]> getFile(@PathVariable String id) throws FileNotFoundException {
-        File fileDB = service.file(Long.getLong(id));
+    @GetMapping("/get/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    public ResponseEntity<byte[]> getFile(@PathVariable Long id) throws FileNotFoundException {
+        File fileDB = service.file(id);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileDB.name() + "\"")
                 .body(fileDB.data());
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseMessage> removeFile(@PathVariable Long id) {
+        service.deleteFile(id);
+
+        return ResponseEntity.ok().body(new ResponseMessage("File deleted successfully."));
     }
 }

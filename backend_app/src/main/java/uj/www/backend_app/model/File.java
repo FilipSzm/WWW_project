@@ -8,7 +8,6 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "files")
-@NoArgsConstructor
 public class File {
     @JsonIgnore
     @Id
@@ -28,6 +27,12 @@ public class File {
     @JsonProperty("data")
     @Column(name = "data")
     private byte[] data;
+
+    public File() {
+        name = null;
+        type = null;
+        data = null;
+    }
 
     public File(String name, String type, byte[] data) {
         this.name = name;

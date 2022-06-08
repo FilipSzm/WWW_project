@@ -15,27 +15,32 @@ import java.util.Objects;
 @Service
 public class FileService {
 
-    private FileRepository repository;
+    private final FileRepository repository;
 
     @Autowired
     public FileService(FileRepository repository) {
         this.repository = repository;
     }
 
-    public File store(MultipartFile file) throws IOException {
+    public void store(MultipartFile file) throws IOException {
         String fileName = StringUtils.cleanPath(
                 Objects.requireNonNull(file.getOriginalFilename())
         );
 
         File fileDB = new File(fileName, file.getContentType(), file.getBytes());
-        return repository.save(fileDB);
+        repository.save(fileDB);
     }
 
     public File file(Long id) throws FileNotFoundException {
-        return  repository.findById(id).orElseThrow(FileNotFoundException::new);
+        return repository.findById(id).orElseThrow(FileNotFoundException::new);
     }
 
     public List<File> allFiles() {
         return  repository.findAll();
+    }
+
+    public void deleteFile(Long id) {
+        var fileToDelete = repository.findById(id);
+        fileToDelete.ifPresent(repository::delete);
     }
 }

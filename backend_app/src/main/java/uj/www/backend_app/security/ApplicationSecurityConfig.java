@@ -33,13 +33,16 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-//                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
                 .authorizeRequests()
-                .anyRequest().authenticated().and().formLogin();
+                .antMatchers("/api/users/create")
+                .permitAll().and()
+                .authorizeRequests()
+                .anyRequest().authenticated().and()//.formLogin();
+                .httpBasic();
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception{
+    protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(daoAuthenticationProvider());
     }
 

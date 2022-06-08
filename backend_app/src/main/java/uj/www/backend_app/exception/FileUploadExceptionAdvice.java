@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uj.www.backend_app.model.ResponseMessage;
 
 import java.io.FileNotFoundException;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class FileUploadExceptionAdvice extends ResponseEntityExceptionHandler {
@@ -27,5 +28,12 @@ public class FileUploadExceptionAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.EXPECTATION_FAILED)
                 .body(new ResponseMessage("No such file!"));
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ResponseMessage> handleNoElement(NoSuchElementException e) {
+        return ResponseEntity
+                .status(HttpStatus.EXPECTATION_FAILED)
+                .body(new ResponseMessage("No such element!"));
     }
 }

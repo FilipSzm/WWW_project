@@ -2,9 +2,6 @@ package uj.www.backend_app.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +13,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@NoArgsConstructor
 public class User implements UserDetails {
     @JsonIgnore
     @Id
@@ -36,6 +32,11 @@ public class User implements UserDetails {
     @Column(name = "rank")
     private String rank;
 
+    public User() {
+        username = null;
+        encodedPassword = null;
+        rank = null;
+    }
 
     public User(String username, String encodedPassword, String rank) {
         this.username = username;
@@ -45,6 +46,10 @@ public class User implements UserDetails {
 
     public String username() {
         return username;
+    }
+
+    public void updateRank(String rank) {
+        this.rank = rank;
     }
 
     @Override
